@@ -8,7 +8,7 @@ require_once 'OneC/Wsdl/Client.php';
 
 class OneCGateway extends Controller {
 
-	private $enable_logs = 0;
+	private $enable_logs = 1;
 	private $image_dir = 'data/export/';
 
 	private $_model = null;
@@ -400,9 +400,11 @@ class OneCGateway extends Controller {
 		if ($category_id) {
 			$category_description = $this->model_catalog_category->getCategoryDescriptions($category_id);
 			$category_info = array_merge($this->model_catalog_category->getCategory($category_id), $category_description[$lang]);
+			$category_filters = $this->model_catalog_category->getCategoryFilters($category_id);
 		} else {
 			$category_info = array();
 			$category_description = array();
+			$category_filters = array();
 		}
 
 		$template_args = array($args['name'], $this->_getAllCatsForCat($args), '', '', '', '');
@@ -420,8 +422,8 @@ class OneCGateway extends Controller {
 			if ($v["language_id"] == $lang) {
 				$descriptions[$v["language_id"]] = array(
 					'name' 						=> $args['name'],
-			        'seo_h1' 					=> $seo_h1,
-			        'seo_title' 				=> $seo_title,
+			        'h1_title' 					=> $seo_h1,
+			        'meta_title' 				=> $seo_title,
 			        'meta_keyword' 				=> $meta_keyword,
 			        'meta_description' 			=> $meta_description,
 			        'description' 				=> $description,
@@ -429,8 +431,8 @@ class OneCGateway extends Controller {
 			} else {
 				$descriptions[$v["language_id"]] = (isset($category_description[$v["language_id"]]) && $this->setting['save_other_lang']) ? $category_description[$v["language_id"]] : array(
 					'name' 						=> $this->setting['translit_name'] ? $this->_transliterateString($args['name'], false) : '',
-			        'seo_h1' 					=> '',
-			        'seo_title' 				=> '',
+			        'h1_title' 					=> '',
+			        'meta_title' 				=> '',
 			        'meta_keyword' 				=> '',
 			        'meta_description' 			=> '',
 			        'description' 				=> '',
@@ -457,6 +459,7 @@ class OneCGateway extends Controller {
 
 		  'category_store' 			=> $this->_getStores(),
 		  'column' 					=> '0',
+		  'category_filter' 		=> $category_filters,
 		);
 		
 		if ($args['delete'] == '0') {
@@ -593,12 +596,14 @@ class OneCGateway extends Controller {
 			$product_attributes = $this->model_extension_exchange_1c->getProductAttributes($product_id);
 			$product_discounts = $this->model_catalog_product->getProductDiscounts($product_id);
 			$product_specials = $this->model_catalog_product->getProductSpecials($product_id);
+			$product_filter = $this->model_catalog_product->getProductFilters($product_id);
 		} else {
 			$product_info = array();
 			$product_description = array();
 			$product_attributes = array();
 			$product_discounts = array();
 			$product_specials = array();
+			$product_filter = array();
 		}
 
 		$template_args = array($args['name'], $this->_getAllCatsForProd($args['main_category_id']), $args['manufacturer'], $args['name'], $args['model'], $this->currency->format($args['price']));
@@ -619,8 +624,8 @@ class OneCGateway extends Controller {
 			if ($v["language_id"] == $lang) {
 				$descriptions[$v["language_id"]] = array(
 					'name' 						=> $args['name'],
-			        'seo_h1' 					=> $seo_h1,
-			        'seo_title' 				=> $seo_title,
+			        'h1_title' 					=> $seo_h1,
+			        'meta_title' 				=> $seo_title,
 			        'meta_keyword' 				=> $meta_keyword,
 			        'meta_description' 			=> $meta_description,
 			        'description' 				=> $description,
@@ -629,8 +634,8 @@ class OneCGateway extends Controller {
 			} else {
 				$descriptions[$v["language_id"]] = (isset($product_description[$v["language_id"]]) && $this->setting['save_other_lang']) ? $product_description[$v["language_id"]] : array(
 					'name' 						=> $this->setting['translit_name'] ? $this->_transliterateString($args['name'], false) : '',
-			        'seo_h1' 					=> '',
-			        'seo_title' 				=> '',
+			        'h1_title' 					=> '',
+			        'meta_title' 				=> '',
 			        'meta_keyword' 				=> '',
 			        'meta_description' 			=> '',
 			        'description' 				=> '',
@@ -710,6 +715,7 @@ class OneCGateway extends Controller {
 
 		  'product_discount'	=> $product_discounts,
 		  'product_special'		=> $product_specials,
+		  'product_filter'		=> $product_filter,
 		);
 		if ($data['quantity'] == 0 && $this->setting['status_unavailable'] == 1) {
 			$data['status'] = 0;
@@ -1205,7 +1211,7 @@ class OneCGateway extends Controller {
 		$rg = new Registry();
 		$buf = array();
 		$rg->set( 'db', $db);
-	 	$query = $db->query("
+		$query = $db->query("
 			select o.*, op.*, o.total as order_total, ot.value as shipping_price, ot2.value as coupon_price from `" . DB_PREFIX . "order` o
 			left join `" . DB_PREFIX . "order_product` op on o.order_id = op.order_id 
 			left join `" . DB_PREFIX . "order_total` ot on o.order_id = ot.order_id and ot.code = 'shipping'
