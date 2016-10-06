@@ -8,7 +8,7 @@ require_once 'OneC/Wsdl/Client.php';
 
 class OneCGateway extends Controller {
 
-	private $enable_logs = 1;
+	private $enable_logs = 0;
 	private $image_dir = 'data/export/';
 
 	private $_model = null;
