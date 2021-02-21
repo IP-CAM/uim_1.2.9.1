@@ -1,6 +1,7 @@
-# Управление интернет-магазином 1С UIM для 1С Управление торговлей 11.1/11.2
+# Online store management 1C UIM for 1C Trade management 11.1 / 11.2
 
-Текущая версия - 1.2.9.1
- - добавлена выгрузка по купонам
+Current version - 1.2.9.1
+  - added unloading by coupons
 
-Последний тест на Opencart 1.5.6.4.1
+Latest test on Opencart 1.5.6.4.1 
+
